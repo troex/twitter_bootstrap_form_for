@@ -75,7 +75,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Renders a button with default classes to style it as a form button.
   #
   def button(value = nil, options = {})
-    template.button_tag value, {
+    super value, {
       :type  => 'button',
       :class => 'btn',
     }.merge(options)
@@ -86,7 +86,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # button.
   #
   def submit(value = nil, options = {})
-    button value, {
+    self.button value, {
       :type  => 'submit',
       :class => 'btn btn-primary',
     }.merge(options)
@@ -161,12 +161,12 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
       tag     = add_on.present? ? :div : :span
       classes = [ "input", add_on ].compact.join('-')
 
-      template.content_tag(tag, :class => classes) do
+      template.concat(template.content_tag(tag, :class => classes) do
         block.call if block.present? && add_on == :prepend
         template.concat super attribute, *(args << options)
         block.call if block.present? && add_on != :prepend
-        template.concat self.error_span(attribute) if self.errors_on?(attribute)
-      end
+      end)
+      template.concat(self.error_span(attribute)) if self.errors_on?(attribute)
     end
   end
 
@@ -183,7 +183,7 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
   def radio_button(attribute, value, text = nil, options = {})
     klasses = _merge_classes 'radio', options.delete(:inline) && 'inline'
 
-    self.label(attribute, :class => klasses) do
+    self.label(attribute, :value => value, :class => klasses) do
       template.concat super(attribute, value, options)
       template.concat text || value.to_s.humanize.titleize
       yield if block_given?
